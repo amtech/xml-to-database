@@ -28,7 +28,7 @@ public class MySAX extends DefaultHandler
 		xr.setErrorHandler(handler);
 
 		itemFile = new FileWriter("itemFile.csv");
-		categoryFile = new FileWriter("categoryFile.csv");
+		itemLocationFile = new FileWriter("itemLocationFile.csv");
 		categoryItemFile = new FileWriter("categoryItemFile.csv");
 		bidFile = new FileWriter("bidFile.csv");
 		sellerFile = new FileWriter("sellerFile.csv");
@@ -42,7 +42,7 @@ public class MySAX extends DefaultHandler
 		}
 		
 		itemFile.close();
-		categoryFile.close();
+		itemLocationFile.close();
 		categoryItemFile.close();
 		bidderFile.close();
 		sellerFile.close();
@@ -87,9 +87,16 @@ public class MySAX extends DefaultHandler
     
     boolean bItemId = false;
     boolean bName = false;
+    boolean bCategory = false;
     boolean bCurrently = false;
     boolean bFirstBid = false;
     boolean bNumberOfBids = false;
+    
+    boolean bBidder = false;
+    
+    boolean bTime = false;
+    boolean bAmount = false;
+    
     boolean bLatitude = false;
     boolean bLongitude = false;
     boolean bItemLocation = false;
@@ -97,33 +104,67 @@ public class MySAX extends DefaultHandler
     boolean bStarted = false;
     boolean bEnds = false;
     
-    boolean findUpNodeBids = false;
+    boolean checkUppperNodeBids = false;
+    String itemID = null;
+    boolean checkExistLatLngLocation = false;
 
 
     public void startElement (String uri, String name, String qName, Attributes atts) {
 //    	System.out.println("Start Element");
     	if(qName.equalsIgnoreCase("Item")){
             try {
-            	 itemFile.append(atts.getValue("ItemID"));
+            	 itemID = atts.getValue("ItemID");
+            	 itemFile.append(itemID);
             	 itemFile.append(EURO_DELIMITER);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
         } else if(qName.equalsIgnoreCase("Name")) {
     		bName = true;
+    	} else if(qName.equalsIgnoreCase("Category")) {
+    		try {
+				categoryItemFile.append(itemID);
+				categoryItemFile.append(EURO_DELIMITER);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    		bCategory = true;
     	} else if(qName.equalsIgnoreCase("Currently")) {
     		bCurrently = true;
     	} else if(qName.equalsIgnoreCase("First_Bid")) {
     		bFirstBid = true;
     	} else if(qName.equalsIgnoreCase("Number_of_Bids")) {
     		bNumberOfBids = true;
-    	} else if(qName.equalsIgnoreCase("Location") && findUpNodeBids) {
+    	} else if(qName.equalsIgnoreCase("Bid")) {
+    		try {
+				bidFile.append(itemID);
+				bidFile.append(EURO_DELIMITER);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	} else if(qName.equalsIgnoreCase("Bidder")) {
+    		try {
+    			String bidderUserID = atts.getValue("UserID");
+				bidFile.append(bidderUserID);
+				bidFile.append(EURO_DELIMITER);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	} else if(qName.equalsIgnoreCase("Time")) {
+    		bTime = true;
+    	} else if(qName.equalsIgnoreCase("Amount")) {
+    		bAmount = true;
+    	} else if(qName.equalsIgnoreCase("Location") && checkUppperNodeBids) {
 			try {
-           	 	itemFile.append(atts.getValue("Latitude"));
-//    	           	 	System.out.println("Lattitude" + atts.getValue("Latitude") );
-           	 	itemFile.append(EURO_DELIMITER);
-           	 	itemFile.append(atts.getValue("Longitude"));
-           	 	itemFile.append(EURO_DELIMITER);
+				if(atts.getValue("Latitude") != null) {
+					itemLocationFile.append(itemID);
+	           	 	itemLocationFile.append(EURO_DELIMITER);
+	           	 	checkExistLatLngLocation = true;
+					itemLocationFile.append(atts.getValue("Latitude"));
+					itemLocationFile.append(EURO_DELIMITER);
+					itemLocationFile.append(atts.getValue("Longitude"));
+					itemLocationFile.append(EURO_DELIMITER);
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}	
@@ -142,12 +183,30 @@ public class MySAX extends DefaultHandler
 		if(qName.equalsIgnoreCase("Item")) {
 			try {
 				itemFile.append(NEW_LINE_SEPERATOR);
+		
+				if(checkExistLatLngLocation) {
+					itemLocationFile.append(NEW_LINE_SEPERATOR);
+				} 
+				checkExistLatLngLocation = false;
+				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		} else if(qName.equalsIgnoreCase("Bids")) {
-	    		findUpNodeBids = true;
-    	}  
+		} else if(qName.equalsIgnoreCase("Category")) {
+    		try {
+				categoryItemFile.append(NEW_LINE_SEPERATOR);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	} else if(qName.equalsIgnoreCase("Bids")) {
+			checkUppperNodeBids = true;
+    	} else if(qName.equalsIgnoreCase("Bid")) {
+    		try {
+				bidFile.append(NEW_LINE_SEPERATOR);	
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	} 
     }
     
     public boolean writeFile(FileWriter fileName, String value) {
@@ -168,16 +227,21 @@ public class MySAX extends DefaultHandler
     	
     	if(bName) {
     		bName = writeFile(itemFile, value);
+    	} else if(bCategory) {
+    		bCategory = writeFile(categoryItemFile, value);
     	} else if(bCurrently) {
     		bCurrently = writeFile(itemFile, value);
     	} else if(bFirstBid) {
     		bFirstBid = writeFile(itemFile, value);
     	} else if(bNumberOfBids) {
     		bNumberOfBids = writeFile(itemFile, value);
+    	} else if(bTime) {
+    		bTime = writeFile(bidFile, value);
+    	} else if(bAmount) {
+    		bAmount = writeFile(bidFile, strip(value));
     	} else if(bItemLocation) {
-//    		System.out.println("bItemLocation" + value);
     		bItemLocation = writeFile(itemFile, value);
-    		findUpNodeBids = false;
+    		checkUppperNodeBids = false;
     	} else if(bCountry) {
     		bCountry = writeFile(itemFile, value);
     	} else if(bStarted) {

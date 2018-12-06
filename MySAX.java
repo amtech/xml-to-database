@@ -5,20 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
-
-/* Parser skeleton for processing item-???.xml files. Must be compiled in
- * JDK 1.5 or above.
- *
- * Instructions:
- *
- * This program processes all files passed on the command line (to parse
- * an entire diectory, type "java MyParser myFiles/*.xml" at the shell).
- *
- */
-
-
 import java.util.*;
-
 import org.xml.sax.XMLReader;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -27,20 +14,42 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class MySAX extends DefaultHandler
 {
-	FileWriter fileWriter = null;
+	static FileWriter itemFile = null, categoryFile = null, categoryItemFile = null, itemLocationFile = null, 
+			bidFile = null, sellerFile = null, bidderFile = null;
+	
+	String EURO_DELIMITER = "€" ;
+	String NEW_LINE_SEPERATOR = "\n";
+	
     public static void main (String args[]) throws Exception {
+    	
 		XMLReader xr = XMLReaderFactory.createXMLReader();
 		MySAX handler = new MySAX();
 		xr.setContentHandler(handler);
 		xr.setErrorHandler(handler);
-					// Parse each file provided on the
-					// command line.
-		for (int i = 0; i < 1; i++) {
-			File xmlSource = new File("src\\data\\items-"+ i +".xml");
-//			File xmlSource = new File("src\\data\\text.xml");
+
+		itemFile = new FileWriter("itemFile.csv");
+		categoryFile = new FileWriter("categoryFile.csv");
+		categoryItemFile = new FileWriter("categoryItemFile.csv");
+		itemLocationFile = new FileWriter("itemLocationFile.csv");
+		bidFile = new FileWriter("bidFile.csv");
+		sellerFile = new FileWriter("sellerFile.csv");
+		bidderFile = new FileWriter("bidderFile.csv");
+		
+		for (int i = 0; i < 40; i++) {
+			File xmlSource = new File("items-"+ i +".xml");
 		    FileReader r = new FileReader(xmlSource);
 		    xr.parse(new InputSource(r));
 		}
+		
+		itemFile.close();
+		categoryFile.close();
+		categoryItemFile.close();
+		itemLocationFile.close();
+		bidderFile.close();
+		sellerFile.close();
+		bidderFile.close();
+		
+		System.out.println("Done");
     }
 
 
@@ -68,97 +77,74 @@ public class MySAX extends DefaultHandler
         }
     }
 
-    ////////////////////////////////////////////////////////////////////
-    // Event handlers.
-    ////////////////////////////////////////////////////////////////////
-
-
     public void startDocument () {
-//    	System.out.println("Start document");
-    	try {
-			fileWriter = new FileWriter("src\\data\\text.csv");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
     }
 
 
     public void endDocument () {
-//    	System.out.println("End document");
-    	try {
-			fileWriter.flush();
-			fileWriter.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
     }
     
-    boolean iName = false;
+    boolean bItemId = false;
+    boolean bName = false;
+    boolean bCurrently = false;
+    boolean bFirstBid = false;
+    boolean bNumberOfBids = false;
+    boolean bCountry = false;
+    boolean bStarted = false;
+    boolean bEnds = false;
 
 
     public void startElement (String uri, String name, String qName, Attributes atts) {
-    	if(qName.equalsIgnoreCase("name")) {
-    		iName = true;
+    	if(name.equalsIgnoreCase("Item")){
+            try {
+            	 itemFile.append(atts.getValue("ItemID"));
+            	 itemFile.append(EURO_DELIMITER);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+        } else if(qName.equalsIgnoreCase("Name")) {
+    		bName = true;
+    	} else if(qName.equalsIgnoreCase("Currently")) {
+    		bCurrently = true;
+    	} else if(qName.equalsIgnoreCase("First_Bid")) {
+    		bFirstBid = true;
     	}
-//    	 System.out.println(name + ":");
-  
-//		if ("".equals (uri))
-//		    System.out.println("Start element: " + qName);
-//		else
-//		    System.out.println("Start element: {" + uri + "}" + name);
-//		
-//		for (int i = 0; i < atts.getLength(); i++) {
-//		    System.out.println("Attribute: " + atts.getLocalName(i) + "=" + atts.getValue(i));
-//		}
     }
 
 
     public void endElement (String uri, String name, String qName) {
-//		if ("".equals (uri))
-//		    System.out.println("End element: " + qName);
-//		else
-//		    System.out.println("End element:   {" + uri + "}" + name);
+		if(qName.equalsIgnoreCase("Item")) {
+			try {
+				itemFile.append(NEW_LINE_SEPERATOR);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+    }
+    
+    public boolean writeFile(FileWriter fileName, String value) {
+    	try {
+    		fileName.append(value);
+    		fileName.append(EURO_DELIMITER);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	return false;
     }
     
     
     public void characters (char ch[], int start, int length)
     {
-//		System.out.print("Characters:    \"");
-//		for (int i = start; i < start + length; i++) {
-//			    switch (ch[i]) {
-//				    case '\\':
-//						System.out.print("\\\\");
-//						break;
-//				    case '"':
-//						System.out.print("\\\"");
-//						break;
-//				    case '\n':
-//						System.out.print("\\n");
-//						break;
-//				    case '\r':
-//						System.out.print("\\r");
-//						break;
-//				    case '\t':
-//						System.out.print("\\t");
-//						break;
-//				    default:
-//						System.out.print(ch[i]);
-//						break;
-//		    }
-//		}
-//		System.out.print("\"\n");
-    	if(iName) {
-    		System.out.println("Name: " + new String(ch, start, length));
-    		try {
-				fileWriter.append(new String(ch, start, length));
-				fileWriter.append('\n');
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-    		iName = false;
+    	String value = new String(ch, start, length);
+    	
+    	if(bName) {
+    		bName = writeFile(itemFile, value);
+    	} else if(bCurrently) {
+    		bCurrently = writeFile(itemFile, value);
+    	} else if(bFirstBid) {
+    		bFirstBid = writeFile(itemFile, value);
     	}
     	
     }

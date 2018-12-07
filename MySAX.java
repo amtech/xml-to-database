@@ -44,7 +44,7 @@ public class MySAX extends DefaultHandler
 		itemFile.close();
 		itemLocationFile.close();
 		categoryItemFile.close();
-		bidderFile.close();
+		bidFile.close();
 		sellerFile.close();
 		bidderFile.close();
 		
@@ -93,6 +93,8 @@ public class MySAX extends DefaultHandler
     boolean bNumberOfBids = false;
     
     boolean bBidder = false;
+    boolean bBidderLocation = false;
+    boolean bBidderCountry = false;
     
     boolean bTime = false;
     boolean bAmount = false;
@@ -100,11 +102,11 @@ public class MySAX extends DefaultHandler
     boolean bLatitude = false;
     boolean bLongitude = false;
     boolean bItemLocation = false;
-    boolean bCountry = false;
+    boolean bItemCountry = false;
     boolean bStarted = false;
     boolean bEnds = false;
     
-    boolean checkUppperNodeBids = false;
+    boolean checkItemLocationCountry = false;
     String itemID = null;
     boolean checkExistLatLngLocation = false;
 
@@ -143,10 +145,17 @@ public class MySAX extends DefaultHandler
 				e.printStackTrace();
 			}
     	} else if(qName.equalsIgnoreCase("Bidder")) {
+    		bBidder = true;
     		try {
     			String bidderUserID = atts.getValue("UserID");
 				bidFile.append(bidderUserID);
 				bidFile.append(EURO_DELIMITER);
+				
+				bidderFile.append(bidderUserID);
+				bidderFile.append(EURO_DELIMITER);
+				bidderFile.append(atts.getValue("Rating"));
+				bidderFile.append(EURO_DELIMITER);
+				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -154,27 +163,51 @@ public class MySAX extends DefaultHandler
     		bTime = true;
     	} else if(qName.equalsIgnoreCase("Amount")) {
     		bAmount = true;
-    	} else if(qName.equalsIgnoreCase("Location") && checkUppperNodeBids) {
-			try {
-				if(atts.getValue("Latitude") != null) {
-					itemLocationFile.append(itemID);
-	           	 	itemLocationFile.append(EURO_DELIMITER);
-	           	 	checkExistLatLngLocation = true;
-					itemLocationFile.append(atts.getValue("Latitude"));
-					itemLocationFile.append(EURO_DELIMITER);
-					itemLocationFile.append(atts.getValue("Longitude"));
-					itemLocationFile.append(EURO_DELIMITER);
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}	
-			bItemLocation = true;
+    	} else if(qName.equalsIgnoreCase("Location")) {
+    		if(checkItemLocationCountry) {
+    			try {
+    				if(atts.getValue("Latitude") != null) {
+    					itemLocationFile.append(itemID);
+    	           	 	itemLocationFile.append(EURO_DELIMITER);
+    	           	 	checkExistLatLngLocation = true;
+    					itemLocationFile.append(atts.getValue("Latitude"));
+    					itemLocationFile.append(EURO_DELIMITER);
+    					itemLocationFile.append(atts.getValue("Longitude"));
+    					itemLocationFile.append(EURO_DELIMITER);
+    				}
+    			} catch (IOException e) {
+    				e.printStackTrace();
+    			}	
+    			bItemLocation = true;
+    		} 
+    		
+    		if(bBidder) {
+    			bBidderLocation = true;
+    		}
+    		
     	} else if(qName.equalsIgnoreCase("Country")) {
-    		bCountry = true;
+    		if(checkItemLocationCountry) {
+    			bItemCountry = true;
+    		} 
+    		
+    		if (bBidder) {
+    			bBidderCountry = true;
+    		}
     	} else if(qName.equalsIgnoreCase("Started")) {
     		bStarted = true;
     	} else if(qName.equalsIgnoreCase("Ends")) {
     		bEnds = true;
+    	} else if(qName.equalsIgnoreCase("Seller")) {
+            try {
+            	sellerFile.append(itemID);
+            	sellerFile.append(EURO_DELIMITER);
+            	sellerFile.append(atts.getValue("Rating"));
+           	 	sellerFile.append(EURO_DELIMITER);
+            	sellerFile.append(atts.getValue("UserID"));
+            	sellerFile.append(EURO_DELIMITER);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
     	}
     }
 
@@ -199,10 +232,23 @@ public class MySAX extends DefaultHandler
 				e.printStackTrace();
 			}
     	} else if(qName.equalsIgnoreCase("Bids")) {
-			checkUppperNodeBids = true;
+    		checkItemLocationCountry = true;
     	} else if(qName.equalsIgnoreCase("Bid")) {
     		try {
 				bidFile.append(NEW_LINE_SEPERATOR);	
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	} else if(qName.equalsIgnoreCase("Bidder")) {
+    		bBidder = false;
+    		try {
+				bidderFile.append(NEW_LINE_SEPERATOR);	
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	} else if(qName.equalsIgnoreCase("Seller")) {
+    		try {
+				sellerFile.append(NEW_LINE_SEPERATOR);	
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -239,11 +285,15 @@ public class MySAX extends DefaultHandler
     		bTime = writeFile(bidFile, value);
     	} else if(bAmount) {
     		bAmount = writeFile(bidFile, strip(value));
+    	} else if(bBidderLocation) {
+    		bBidderLocation = writeFile(bidderFile, value);
+    	} else if(bBidderCountry) {
+    		bBidderCountry = writeFile(bidderFile, value);
     	} else if(bItemLocation) {
     		bItemLocation = writeFile(itemFile, value);
-    		checkUppperNodeBids = false;
-    	} else if(bCountry) {
-    		bCountry = writeFile(itemFile, value);
+    	} else if(bItemCountry) {
+    		bItemCountry = writeFile(itemFile, value);
+    		checkItemLocationCountry = false;
     	} else if(bStarted) {
     		bStarted = writeFile(itemFile, value);
     	} else if(bEnds) {

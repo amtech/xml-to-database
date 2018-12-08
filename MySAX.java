@@ -15,7 +15,7 @@ import org.xml.sax.helpers.DefaultHandler;
 public class MySAX extends DefaultHandler
 {
 	static FileWriter itemFile = null, categoryFile = null, categoryItemFile = null, itemLocationFile = null, 
-			bidFile = null, sellerFile = null, bidderFile = null;
+			bidFile = null, sellerFile = null, bidderFile = null, buyPriceFile = null;
 	
 	String EURO_DELIMITER = "€" ;
 	String NEW_LINE_SEPERATOR = "\n";
@@ -33,6 +33,7 @@ public class MySAX extends DefaultHandler
 		bidFile = new FileWriter("bidFile.csv");
 		sellerFile = new FileWriter("sellerFile.csv");
 		bidderFile = new FileWriter("bidderFile.csv");
+		buyPriceFile = new FileWriter("buyPriceFile.csv");
 		
 		for (int i = 0; i < 40; i++) {
 			File xmlSource = new File("items-"+ i +".xml");
@@ -47,6 +48,7 @@ public class MySAX extends DefaultHandler
 		bidFile.close();
 		sellerFile.close();
 		bidderFile.close();
+		buyPriceFile.close();
 		
 		System.out.println("Done");
     }
@@ -75,6 +77,14 @@ public class MySAX extends DefaultHandler
             return nf.format(am).substring(1);
         }
     }
+    
+    boolean checkExistValue(ArrayList<String> sellerArray, String targetValue) {
+        for(String s: sellerArray){
+            if(s.equalsIgnoreCase(targetValue))
+                return true;
+        }
+        return false;
+    }
 
     public void startDocument () {
 
@@ -85,30 +95,37 @@ public class MySAX extends DefaultHandler
 
     }
     
-    boolean bItemId = false;
-    boolean bName = false;
-    boolean bCategory = false;
-    boolean bCurrently = false;
-    boolean bFirstBid = false;
-    boolean bNumberOfBids = false;
+    private boolean bItemId = false;
+    private boolean bName = false;
+    private boolean bCategory = false;
     
-    boolean bBidder = false;
-    boolean bBidderLocation = false;
-    boolean bBidderCountry = false;
+    private boolean bBuyPrice = false;
     
-    boolean bTime = false;
-    boolean bAmount = false;
+    private boolean bCurrently = false;
+    private boolean bFirstBid = false;
+    private boolean bNumberOfBids = false;
     
-    boolean bLatitude = false;
-    boolean bLongitude = false;
-    boolean bItemLocation = false;
-    boolean bItemCountry = false;
-    boolean bStarted = false;
-    boolean bEnds = false;
+    private boolean bBidder = false;
+    private boolean bBidderLocation = false;
+    private boolean bBidderCountry = false;
     
-    boolean checkItemLocationCountry = false;
-    String itemID = null;
-    boolean checkExistLatLngLocation = false;
+    private boolean bTime = false;
+    private boolean bAmount = false;
+    
+    private boolean bLatitude = false;
+    private boolean bLongitude = false;
+    private boolean bItemLocation = false;
+    private boolean bItemCountry = false;
+    private boolean bStarted = false;
+    private boolean bEnds = false;
+    
+    private boolean checkItemLocationCountry = false;
+    private String itemID = null;
+    private boolean checkExistLatLngLocation = false;
+    
+    private ArrayList<String> sellerArray = new ArrayList<String>();
+    
+    
 
 
     public void startElement (String uri, String name, String qName, Attributes atts) {
@@ -133,6 +150,14 @@ public class MySAX extends DefaultHandler
     		bCategory = true;
     	} else if(qName.equalsIgnoreCase("Currently")) {
     		bCurrently = true;
+    	} else if(qName.equalsIgnoreCase("Buy_Price")) {
+    		bBuyPrice = true;
+    		try {
+				buyPriceFile.append(itemID);
+				buyPriceFile.append(EURO_DELIMITER);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
     	} else if(qName.equalsIgnoreCase("First_Bid")) {
     		bFirstBid = true;
     	} else if(qName.equalsIgnoreCase("Number_of_Bids")) {
@@ -199,12 +224,17 @@ public class MySAX extends DefaultHandler
     		bEnds = true;
     	} else if(qName.equalsIgnoreCase("Seller")) {
             try {
-            	sellerFile.append(itemID);
-            	sellerFile.append(EURO_DELIMITER);
-            	sellerFile.append(atts.getValue("Rating"));
-           	 	sellerFile.append(EURO_DELIMITER);
-            	sellerFile.append(atts.getValue("UserID"));
-            	sellerFile.append(EURO_DELIMITER);
+            	String sellerUserID = atts.getValue("UserID");
+            	itemFile.append(sellerUserID);
+            	itemFile.append(EURO_DELIMITER);
+            	if(!checkExistValue(sellerArray, sellerUserID)) {
+            		sellerArray.add(sellerUserID);
+                	sellerFile.append(sellerUserID);
+                	sellerFile.append(EURO_DELIMITER);
+                	sellerFile.append(atts.getValue("Rating"));
+               	 	sellerFile.append(EURO_DELIMITER);
+               	 	sellerFile.append(NEW_LINE_SEPERATOR);	
+            	}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -231,6 +261,12 @@ public class MySAX extends DefaultHandler
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+    	} else if(qName.equalsIgnoreCase("Buy_Price")) {
+    		try {
+				buyPriceFile.append(NEW_LINE_SEPERATOR);	
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
     	} else if(qName.equalsIgnoreCase("Bids")) {
     		checkItemLocationCountry = true;
     	} else if(qName.equalsIgnoreCase("Bid")) {
@@ -243,12 +279,6 @@ public class MySAX extends DefaultHandler
     		bBidder = false;
     		try {
 				bidderFile.append(NEW_LINE_SEPERATOR);	
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-    	} else if(qName.equalsIgnoreCase("Seller")) {
-    		try {
-				sellerFile.append(NEW_LINE_SEPERATOR);	
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -277,6 +307,8 @@ public class MySAX extends DefaultHandler
     		bCategory = writeFile(categoryItemFile, value);
     	} else if(bCurrently) {
     		bCurrently = writeFile(itemFile, value);
+    	} else if(bBuyPrice) {
+    		bBuyPrice = writeFile(buyPriceFile, strip(value));
     	} else if(bFirstBid) {
     		bFirstBid = writeFile(itemFile, value);
     	} else if(bNumberOfBids) {

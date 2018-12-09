@@ -121,7 +121,6 @@ public class MySAX extends DefaultHandler
     private boolean checkItemLocationCountry = false;
     private String itemID = null;
     private boolean checkExistLatLngLocation = false;
-    private boolean checkValidityForTimeAmount = false;
     
     private ArrayList<String> sellerArray = new ArrayList<String>();
     private ArrayList<String> bidderArray = new ArrayList<String>();
@@ -162,13 +161,13 @@ public class MySAX extends DefaultHandler
     	} else if(qName.equalsIgnoreCase("Bidder")) {
     		try {
     			String bidderUserID = atts.getValue("UserID");
+    			bidFile.append(itemID);
+				bidFile.append(EURO_DELIMITER);
+				bidFile.append(bidderUserID);
+				bidFile.append(EURO_DELIMITER);
+				
             	if(!checkExistValue(bidderArray, bidderUserID)) {
-
-    				bidFile.append(itemID);
-    				bidFile.append(EURO_DELIMITER);
-    				bidFile.append(bidderUserID);
-    				bidFile.append(EURO_DELIMITER);
-            		
+            
             		bidderArray.add(bidderUserID);
             		
     				bidderFile.append(bidderUserID);
@@ -177,15 +176,15 @@ public class MySAX extends DefaultHandler
     				bidderFile.append(EURO_DELIMITER);
     				
     				bBidder = true;  
-    				checkValidityForTimeAmount = true;
+//    				checkValidityForTimeAmount = true;
 				} 
 				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-    	} else if(qName.equalsIgnoreCase("Time") && checkValidityForTimeAmount) {
+    	} else if(qName.equalsIgnoreCase("Time")) {
     		bTime = true;
-    	} else if(qName.equalsIgnoreCase("Amount") && checkValidityForTimeAmount) {
+    	} else if(qName.equalsIgnoreCase("Amount")) {
     		bAmount = true;
     	} else if(qName.equalsIgnoreCase("Location")) {
     		if(checkItemLocationCountry) {
@@ -270,8 +269,7 @@ public class MySAX extends DefaultHandler
 			}
     	} else if(qName.equalsIgnoreCase("Bids")) {
     		checkItemLocationCountry = true;
-    	} else if(qName.equalsIgnoreCase("Bid") && checkValidityForTimeAmount) {
-    		checkValidityForTimeAmount = false;
+    	} else if(qName.equalsIgnoreCase("Bid")) {
     		try {
 				bidFile.append(NEW_LINE_SEPERATOR);
 			} catch (IOException e) {

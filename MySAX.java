@@ -18,7 +18,7 @@ public class MySAX extends DefaultHandler
 	static FileWriter itemFile = null, categoryItemFile = null, itemLocationFile = null, 
 			bidFile = null, sellerFile = null, bidderFile = null, buyPriceFile = null;
 	
-	static String FIELD_DELIMITER = "Â" ;
+	static String FIELD_DELIMITER = "<>";
 	static String NEW_LINE_SEPERATOR = "\n";
 	
     public static void main (String args[]) throws Exception {
@@ -36,7 +36,7 @@ public class MySAX extends DefaultHandler
 		bidderFile = new FileWriter("bidderFile.csv");
 		buyPriceFile = new FileWriter("buyPriceFile.csv");
 		
-		// must be remove before submit assignment
+//		// must be remove before submit assignment
 //		for (int i = 0; i < 40; i++) {
 //			File xmlSource = new File("items-"+ i +".xml");
 ////			File xmlSource = new File("text.xml");

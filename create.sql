@@ -17,9 +17,10 @@ PRIMARY KEY (item_id)
 
 
 CREATE TABLE categories (
+id INT(11) NOT NULL,
 item_id INT(11) NOT NULL,
 category VARCHAR(255) NOT NULL,
-PRIMARY KEY (item_id, category)
+PRIMARY KEY (id)
 );
 
 CREATE TABLE locations (
@@ -36,11 +37,12 @@ PRIMARY KEY (item_id)
 );
 	
 CREATE TABLE bids (
+id INT(11) NOT NULL,
 item_id INT(11) NOT NULL,
 user_id VARCHAR(255) NOT NULL,
 time TIMESTAMP NOT NULL,
 amount DECIMAL(8,2) NOT NULL,
-PRIMARY KEY (item_id, user_id)
+PRIMARY KEY (id)
 );
 
 CREATE TABLE bidders (

@@ -38,7 +38,7 @@ PRIMARY KEY (item_id)
 CREATE TABLE bids (
 item_id INT(11) NOT NULL,
 user_id VARCHAR(255) NOT NULL,
-bid_t TIMESTAMP NOT NULL,
+time TIMESTAMP NOT NULL,
 amount DECIMAL(8,2) NOT NULL,
 PRIMARY KEY (item_id, user_id)
 );

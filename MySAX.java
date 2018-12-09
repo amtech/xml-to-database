@@ -18,8 +18,8 @@ public class MySAX extends DefaultHandler
 	static FileWriter itemFile = null, categoryItemFile = null, itemLocationFile = null, 
 			bidFile = null, sellerFile = null, bidderFile = null, buyPriceFile = null;
 	
-	String FIELD_DELIMITER = "§" ;
-	String NEW_LINE_SEPERATOR = "\n";
+	static String FIELD_DELIMITER = "$" ;
+	static String NEW_LINE_SEPERATOR = "\n";
 	
     public static void main (String args[]) throws Exception {
     	
@@ -39,16 +39,16 @@ public class MySAX extends DefaultHandler
 		// must be remove before submit assignment
 //		for (int i = 0; i < 40; i++) {
 //			File xmlSource = new File("items-"+ i +".xml");
-//			File xmlSource = new File("text.xml");
+////			File xmlSource = new File("text.xml");
 //		    FileReader r = new FileReader(xmlSource);
 //		    xr.parse(new InputSource(r));
 //		}
-		
+//		
 		for (int i = 0; i < args.length; i++) {
 		    FileReader r = new FileReader(args[i]);
 		    xr.parse(new InputSource(r));
 		}
-		
+	
 		itemFile.close();
 		itemLocationFile.close();
 		categoryItemFile.close();
@@ -131,6 +131,9 @@ public class MySAX extends DefaultHandler
     
     private ArrayList<String> sellerArray = new ArrayList<String>();
     private ArrayList<String> bidderArray = new ArrayList<String>();
+    
+    private int categoryCount = 1;
+    private int bidCount = 1;
 
     public void startElement (String uri, String name, String qName, Attributes atts) {
     	if(qName.equalsIgnoreCase("Item")){
@@ -145,8 +148,12 @@ public class MySAX extends DefaultHandler
     		bName = true;
     	} else if(qName.equalsIgnoreCase("Category")) {
     		try {
+    			String strI = Integer.toString(categoryCount);
+				categoryItemFile.append(strI);
+    			categoryItemFile.append(FIELD_DELIMITER);
 				categoryItemFile.append(itemID);
 				categoryItemFile.append(FIELD_DELIMITER);
+				categoryCount++;
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -168,6 +175,11 @@ public class MySAX extends DefaultHandler
     	} else if(qName.equalsIgnoreCase("Bidder")) {
     		try {
     			String bidderUserID = atts.getValue("UserID");
+    			String strI = Integer.toString(bidCount);
+				bidFile.append(strI);
+    			bidFile.append(FIELD_DELIMITER);
+    			bidCount++;
+    			
     			bidFile.append(itemID);
 				bidFile.append(FIELD_DELIMITER);
 				bidFile.append(bidderUserID);
@@ -249,7 +261,13 @@ public class MySAX extends DefaultHandler
     }
 
 
-    public void endElement (String uri, String name, String qName) {
+    private CharSequence string(int count2) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+	public void endElement (String uri, String name, String qName) {
 		if(qName.equalsIgnoreCase("Item")) {
 			try {
 				itemFile.append(NEW_LINE_SEPERATOR);

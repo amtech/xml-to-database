@@ -18,7 +18,7 @@ public class MySAX extends DefaultHandler
 	static FileWriter itemFile = null, categoryItemFile = null, itemLocationFile = null, 
 			bidFile = null, sellerFile = null, bidderFile = null, buyPriceFile = null;
 	
-	String EURO_DELIMITER = "€" ;
+	String EURO_DELIMITER = "Î¦" ;
 	String NEW_LINE_SEPERATOR = "\n";
 	
     public static void main (String args[]) throws Exception {

@@ -5,6 +5,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import org.xml.sax.XMLReader;
 import org.xml.sax.Attributes;
@@ -14,7 +15,7 @@ import org.xml.sax.helpers.DefaultHandler;
 
 public class MySAX extends DefaultHandler
 {
-	static FileWriter itemFile = null, categoryFile = null, categoryItemFile = null, itemLocationFile = null, 
+	static FileWriter itemFile = null, categoryItemFile = null, itemLocationFile = null, 
 			bidFile = null, sellerFile = null, bidderFile = null, buyPriceFile = null;
 	
 	String EURO_DELIMITER = "€" ;
@@ -58,9 +59,6 @@ public class MySAX extends DefaultHandler
     	super();
     }
 
-    /* Returns the amount (in XXXXX.xx format) denoted by a money-string
-     * like $3,453.23. Returns the input if the input is an empty string.
-     */
     static String strip(String money) {
         if (money.equals(""))
             return money;
@@ -118,18 +116,17 @@ public class MySAX extends DefaultHandler
     private boolean bItemCountry = false;
     private boolean bStarted = false;
     private boolean bEnds = false;
+    private boolean bDescription = false;
     
     private boolean checkItemLocationCountry = false;
     private String itemID = null;
     private boolean checkExistLatLngLocation = false;
+    private boolean checkValidityForTimeAmount = false;
     
     private ArrayList<String> sellerArray = new ArrayList<String>();
-    
-    
-
+    private ArrayList<String> bidderArray = new ArrayList<String>();
 
     public void startElement (String uri, String name, String qName, Attributes atts) {
-//    	System.out.println("Start Element");
     	if(qName.equalsIgnoreCase("Item")){
             try {
             	 itemID = atts.getValue("ItemID");
@@ -162,31 +159,33 @@ public class MySAX extends DefaultHandler
     		bFirstBid = true;
     	} else if(qName.equalsIgnoreCase("Number_of_Bids")) {
     		bNumberOfBids = true;
-    	} else if(qName.equalsIgnoreCase("Bid")) {
-    		try {
-				bidFile.append(itemID);
-				bidFile.append(EURO_DELIMITER);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
     	} else if(qName.equalsIgnoreCase("Bidder")) {
-    		bBidder = true;
     		try {
     			String bidderUserID = atts.getValue("UserID");
-				bidFile.append(bidderUserID);
-				bidFile.append(EURO_DELIMITER);
-				
-				bidderFile.append(bidderUserID);
-				bidderFile.append(EURO_DELIMITER);
-				bidderFile.append(atts.getValue("Rating"));
-				bidderFile.append(EURO_DELIMITER);
+            	if(!checkExistValue(bidderArray, bidderUserID)) {
+
+    				bidFile.append(itemID);
+    				bidFile.append(EURO_DELIMITER);
+    				bidFile.append(bidderUserID);
+    				bidFile.append(EURO_DELIMITER);
+            		
+            		bidderArray.add(bidderUserID);
+            		
+    				bidderFile.append(bidderUserID);
+    				bidderFile.append(EURO_DELIMITER);
+    				bidderFile.append(atts.getValue("Rating"));
+    				bidderFile.append(EURO_DELIMITER);
+    				
+    				bBidder = true;  
+    				checkValidityForTimeAmount = true;
+				} 
 				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-    	} else if(qName.equalsIgnoreCase("Time")) {
+    	} else if(qName.equalsIgnoreCase("Time") && checkValidityForTimeAmount) {
     		bTime = true;
-    	} else if(qName.equalsIgnoreCase("Amount")) {
+    	} else if(qName.equalsIgnoreCase("Amount") && checkValidityForTimeAmount) {
     		bAmount = true;
     	} else if(qName.equalsIgnoreCase("Location")) {
     		if(checkItemLocationCountry) {
@@ -238,7 +237,9 @@ public class MySAX extends DefaultHandler
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-    	}
+    	} else if(qName.equalsIgnoreCase("Description")) {
+    		bDescription = true;
+    	} 
     }
 
 
@@ -269,13 +270,14 @@ public class MySAX extends DefaultHandler
 			}
     	} else if(qName.equalsIgnoreCase("Bids")) {
     		checkItemLocationCountry = true;
-    	} else if(qName.equalsIgnoreCase("Bid")) {
+    	} else if(qName.equalsIgnoreCase("Bid") && checkValidityForTimeAmount) {
+    		checkValidityForTimeAmount = false;
     		try {
-				bidFile.append(NEW_LINE_SEPERATOR);	
+				bidFile.append(NEW_LINE_SEPERATOR);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-    	} else if(qName.equalsIgnoreCase("Bidder")) {
+    	} else if(qName.equalsIgnoreCase("Bidder") && bBidder) {
     		bBidder = false;
     		try {
 				bidderFile.append(NEW_LINE_SEPERATOR);	
@@ -295,10 +297,22 @@ public class MySAX extends DefaultHandler
     	return false;
     }
     
+    private static String convertTimeToMySQL(String eBayTime) {
+        SimpleDateFormat ebayTimePattern = new SimpleDateFormat("MMM-dd-yy HH:mm:ss");
+        SimpleDateFormat MySQLPattern = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String MySQLFormattedPattern = "";
+        try {
+            Date parsedEbayTime = ebayTimePattern.parse(eBayTime);
+            MySQLFormattedPattern = MySQLPattern.format(parsedEbayTime);
+        } catch (ParseException ex) {
+            System.out.println(ex.getMessage());
+        }
+        return MySQLFormattedPattern;
+    }
+    
     
     public void characters (char ch[], int start, int length)
     {
-//    	System.out.println("Character");
     	String value = new String(ch, start, length);
     	
     	if(bName) {
@@ -306,15 +320,15 @@ public class MySAX extends DefaultHandler
     	} else if(bCategory) {
     		bCategory = writeFile(categoryItemFile, value);
     	} else if(bCurrently) {
-    		bCurrently = writeFile(itemFile, value);
+    		bCurrently = writeFile(itemFile, strip(value));
     	} else if(bBuyPrice) {
     		bBuyPrice = writeFile(buyPriceFile, strip(value));
     	} else if(bFirstBid) {
-    		bFirstBid = writeFile(itemFile, value);
+    		bFirstBid = writeFile(itemFile, strip(value));
     	} else if(bNumberOfBids) {
     		bNumberOfBids = writeFile(itemFile, value);
     	} else if(bTime) {
-    		bTime = writeFile(bidFile, value);
+    		bTime = writeFile(bidFile, convertTimeToMySQL(value));
     	} else if(bAmount) {
     		bAmount = writeFile(bidFile, strip(value));
     	} else if(bBidderLocation) {
@@ -327,11 +341,17 @@ public class MySAX extends DefaultHandler
     		bItemCountry = writeFile(itemFile, value);
     		checkItemLocationCountry = false;
     	} else if(bStarted) {
-    		bStarted = writeFile(itemFile, value);
+    		bStarted = writeFile(itemFile, convertTimeToMySQL(value));
     	} else if(bEnds) {
-    		bEnds = writeFile(itemFile, value);
+    		bEnds = writeFile(itemFile, convertTimeToMySQL(value));
+    	} else if(bDescription) {
+    		int maxDescription = 4000;
+    		String description = value.replace(NEW_LINE_SEPERATOR, "").replace("\r", "");
+    		if(description.length() > maxDescription) {
+    			description = description.substring(0, maxDescription);
+    		}
+    		bDescription = writeFile(itemFile, description);
     	}
-    	
     }
 
 }

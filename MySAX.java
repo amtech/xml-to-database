@@ -18,7 +18,7 @@ public class MySAX extends DefaultHandler
 	static FileWriter itemFile = null, categoryItemFile = null, itemLocationFile = null, 
 			bidFile = null, sellerFile = null, bidderFile = null, buyPriceFile = null;
 	
-	String EURO_DELIMITER = "Φ" ;
+	String FIELD_DELIMITER = "§" ;
 	String NEW_LINE_SEPERATOR = "\n";
 	
     public static void main (String args[]) throws Exception {
@@ -137,7 +137,7 @@ public class MySAX extends DefaultHandler
             try {
             	 itemID = atts.getValue("ItemID");
             	 itemFile.append(itemID);
-            	 itemFile.append(EURO_DELIMITER);
+            	 itemFile.append(FIELD_DELIMITER);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -146,7 +146,7 @@ public class MySAX extends DefaultHandler
     	} else if(qName.equalsIgnoreCase("Category")) {
     		try {
 				categoryItemFile.append(itemID);
-				categoryItemFile.append(EURO_DELIMITER);
+				categoryItemFile.append(FIELD_DELIMITER);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -157,7 +157,7 @@ public class MySAX extends DefaultHandler
     		bBuyPrice = true;
     		try {
 				buyPriceFile.append(itemID);
-				buyPriceFile.append(EURO_DELIMITER);
+				buyPriceFile.append(FIELD_DELIMITER);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -169,18 +169,18 @@ public class MySAX extends DefaultHandler
     		try {
     			String bidderUserID = atts.getValue("UserID");
     			bidFile.append(itemID);
-				bidFile.append(EURO_DELIMITER);
+				bidFile.append(FIELD_DELIMITER);
 				bidFile.append(bidderUserID);
-				bidFile.append(EURO_DELIMITER);
+				bidFile.append(FIELD_DELIMITER);
 				
             	if(!checkExistValue(bidderArray, bidderUserID)) {
             
             		bidderArray.add(bidderUserID);
             		
     				bidderFile.append(bidderUserID);
-    				bidderFile.append(EURO_DELIMITER);
+    				bidderFile.append(FIELD_DELIMITER);
     				bidderFile.append(atts.getValue("Rating"));
-    				bidderFile.append(EURO_DELIMITER);
+    				bidderFile.append(FIELD_DELIMITER);
     				
     				bBidder = true;  
 //    				checkValidityForTimeAmount = true;
@@ -198,12 +198,12 @@ public class MySAX extends DefaultHandler
     			try {
     				if(atts.getValue("Latitude") != null) {
     					itemLocationFile.append(itemID);
-    	           	 	itemLocationFile.append(EURO_DELIMITER);
+    	           	 	itemLocationFile.append(FIELD_DELIMITER);
     	           	 	checkExistLatLngLocation = true;
     					itemLocationFile.append(atts.getValue("Latitude"));
-    					itemLocationFile.append(EURO_DELIMITER);
+    					itemLocationFile.append(FIELD_DELIMITER);
     					itemLocationFile.append(atts.getValue("Longitude"));
-    					itemLocationFile.append(EURO_DELIMITER);
+    					itemLocationFile.append(FIELD_DELIMITER);
     				}
     			} catch (IOException e) {
     				e.printStackTrace();
@@ -231,13 +231,13 @@ public class MySAX extends DefaultHandler
             try {
             	String sellerUserID = atts.getValue("UserID");
             	itemFile.append(sellerUserID);
-            	itemFile.append(EURO_DELIMITER);
+            	itemFile.append(FIELD_DELIMITER);
             	if(!checkExistValue(sellerArray, sellerUserID)) {
             		sellerArray.add(sellerUserID);
                 	sellerFile.append(sellerUserID);
-                	sellerFile.append(EURO_DELIMITER);
+                	sellerFile.append(FIELD_DELIMITER);
                 	sellerFile.append(atts.getValue("Rating"));
-               	 	sellerFile.append(EURO_DELIMITER);
+               	 	sellerFile.append(FIELD_DELIMITER);
                	 	sellerFile.append(NEW_LINE_SEPERATOR);	
             	}
 			} catch (IOException e) {
@@ -295,7 +295,7 @@ public class MySAX extends DefaultHandler
     public boolean writeFile(FileWriter fileName, String value) {
     	try {
     		fileName.append(value);
-    		fileName.append(EURO_DELIMITER);
+    		fileName.append(FIELD_DELIMITER);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

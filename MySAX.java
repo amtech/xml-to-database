@@ -37,17 +37,17 @@ public class MySAX extends DefaultHandler
 		buyPriceFile = new FileWriter("buyPriceFile.csv");
 		
 //		// must be remove before submit assignment
-//		for (int i = 0; i < 40; i++) {
-//			File xmlSource = new File("items-"+ i +".xml");
-////			File xmlSource = new File("text.xml");
-//		    FileReader r = new FileReader(xmlSource);
-//		    xr.parse(new InputSource(r));
-//		}
-//		
-		for (int i = 0; i < args.length; i++) {
-		    FileReader r = new FileReader(args[i]);
+		for (int i = 0; i < 40; i++) {
+			File xmlSource = new File("items-"+ i +".xml");
+//			File xmlSource = new File("text.xml");
+		    FileReader r = new FileReader(xmlSource);
 		    xr.parse(new InputSource(r));
 		}
+//		
+//		for (int i = 0; i < args.length; i++) {
+//		    FileReader r = new FileReader(args[i]);
+//		    xr.parse(new InputSource(r));
+//		}
 	
 		itemFile.close();
 		itemLocationFile.close();
@@ -133,7 +133,6 @@ public class MySAX extends DefaultHandler
     private ArrayList<String> bidderArray = new ArrayList<String>();
     
     private int categoryCount = 1;
-    private int bidCount = 1;
 
     public void startElement (String uri, String name, String qName, Attributes atts) {
     	if(qName.equalsIgnoreCase("Item")){
@@ -175,11 +174,6 @@ public class MySAX extends DefaultHandler
     	} else if(qName.equalsIgnoreCase("Bidder")) {
     		try {
     			String bidderUserID = atts.getValue("UserID");
-    			String strI = Integer.toString(bidCount);
-//				bidFile.append(strI);
-//    			bidFile.append(FIELD_DELIMITER);
-//    			bidCount++;
-    			
     			bidFile.append(itemID);
 				bidFile.append(FIELD_DELIMITER);
 				bidFile.append(bidderUserID);
@@ -195,7 +189,6 @@ public class MySAX extends DefaultHandler
     				bidderFile.append(FIELD_DELIMITER);
     				
     				bBidder = true;  
-//    				checkValidityForTimeAmount = true;
 				} 
 				
 			} catch (IOException e) {

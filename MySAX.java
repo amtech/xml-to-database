@@ -36,6 +36,7 @@ public class MySAX extends DefaultHandler
 		bidderFile = new FileWriter("bidderFile.csv");
 		buyPriceFile = new FileWriter("buyPriceFile.csv");
 		
+		// must be remove before submit assignment
 //		for (int i = 0; i < 40; i++) {
 //			File xmlSource = new File("items-"+ i +".xml");
 //			File xmlSource = new File("text.xml");
@@ -56,7 +57,8 @@ public class MySAX extends DefaultHandler
 		bidderFile.close();
 		buyPriceFile.close();
 		
-		System.out.println("Done");
+		// must be remove before submit assignment
+//		System.out.println("Done");
     }
 
 

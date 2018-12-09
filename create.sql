@@ -1,3 +1,5 @@
+use ad;
+
 CREATE TABLE items (
 item_id INT(11) NOT NULL,
 name VARCHAR(255) NOT NULL,
@@ -31,17 +33,17 @@ CREATE TABLE buy_prices (
 item_id INT(11) NOT NULL,
 buy_price DECIMAL(8,2) NOT NULL,
 PRIMARY KEY (item_id)
-)
+);
 	
-CREATE TABLE bid (
+CREATE TABLE bids (
 item_id INT(11) NOT NULL,
 user_id VARCHAR(255) NOT NULL,
-time TIMESTAMP NOT NULL,
+bid_t TIMESTAMP NOT NULL,
 amount DECIMAL(8,2) NOT NULL,
 PRIMARY KEY (item_id, user_id)
 );
 
-CREATE TABLE bidder (
+CREATE TABLE bidders (
 user_id VARCHAR(255) NOT NULL,
 rating INT(11) NOT NULL,
 location VARCHAR(255) NOT NULL,
@@ -49,7 +51,7 @@ country VARCHAR(255) NOT NULL,
 PRIMARY KEY (user_id)
 );
 
-CREATE TABLE seller (
+CREATE TABLE sellers (
 user_id VARCHAR(255) NOT NULL,
 rating INT(11) NOT NULL,
 PRIMARY KEY (user_id)

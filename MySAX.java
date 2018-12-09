@@ -36,10 +36,15 @@ public class MySAX extends DefaultHandler
 		bidderFile = new FileWriter("bidderFile.csv");
 		buyPriceFile = new FileWriter("buyPriceFile.csv");
 		
-		for (int i = 0; i < 40; i++) {
-			File xmlSource = new File("items-"+ i +".xml");
+//		for (int i = 0; i < 40; i++) {
+//			File xmlSource = new File("items-"+ i +".xml");
 //			File xmlSource = new File("text.xml");
-		    FileReader r = new FileReader(xmlSource);
+//		    FileReader r = new FileReader(xmlSource);
+//		    xr.parse(new InputSource(r));
+//		}
+		
+		for (int i = 0; i < args.length; i++) {
+		    FileReader r = new FileReader(args[i]);
 		    xr.parse(new InputSource(r));
 		}
 		

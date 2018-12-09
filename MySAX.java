@@ -176,9 +176,9 @@ public class MySAX extends DefaultHandler
     		try {
     			String bidderUserID = atts.getValue("UserID");
     			String strI = Integer.toString(bidCount);
-				bidFile.append(strI);
-    			bidFile.append(FIELD_DELIMITER);
-    			bidCount++;
+//				bidFile.append(strI);
+//    			bidFile.append(FIELD_DELIMITER);
+//    			bidCount++;
     			
     			bidFile.append(itemID);
 				bidFile.append(FIELD_DELIMITER);

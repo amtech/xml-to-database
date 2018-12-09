@@ -37,12 +37,12 @@ PRIMARY KEY (item_id)
 );
 	
 CREATE TABLE bids (
-id INT(11) NOT NULL,
+--id INT(11) NOT NULL,
 item_id INT(11) NOT NULL,
 user_id VARCHAR(255) NOT NULL,
 time TIMESTAMP NOT NULL,
 amount DECIMAL(8,2) NOT NULL,
-PRIMARY KEY (id)
+PRIMARY KEY (item_id,user_id,amount)
 );
 
 CREATE TABLE bidders (

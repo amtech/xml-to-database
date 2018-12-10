@@ -1,5 +1,11 @@
 use ad;
 
+CREATE TABLE sellers (
+user_id VARCHAR(100) NOT NULL,
+rating INT NOT NULL,
+PRIMARY KEY (user_id)
+);
+
 CREATE TABLE items (
 item_id INT NOT NULL,
 name VARCHAR(100) NOT NULL,
@@ -39,6 +45,14 @@ buy_price DECIMAL(8,2) NOT NULL,
 PRIMARY KEY (item_id),
 FOREIGN KEY (item_id) REFERENCES items(item_id)
 );
+
+CREATE TABLE bidders (
+user_id VARCHAR(100) NOT NULL,
+rating INT(11) NOT NULL,
+location VARCHAR(100) NOT NULL,
+country VARCHAR(100) NOT NULL,
+PRIMARY KEY (user_id)
+);
 	
 CREATE TABLE bids (
 item_id INT NOT NULL,
@@ -48,18 +62,4 @@ amount DECIMAL(8,2) NOT NULL,
 PRIMARY KEY (item_id,user_id,amount),
 FOREIGN KEY (item_id) REFERENCES ittems(item_id),
 FOREIGN KEY (user_id) REFERENCES bidders(user_id)
-);
-
-CREATE TABLE bidders (
-user_id VARCHAR(100) NOT NULL,
-rating INT(11) NOT NULL,
-location VARCHAR(100) NOT NULL,
-country VARCHAR(100) NOT NULL,
-PRIMARY KEY (user_id)
-);
-
-CREATE TABLE sellers (
-user_id VARCHAR(100) NOT NULL,
-rating INT NOT NULL,
-PRIMARY KEY (user_id)
 );

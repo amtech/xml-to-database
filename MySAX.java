@@ -1,11 +1,8 @@
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.NumberFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.text.*;
 import java.util.*;
 import org.xml.sax.XMLReader;
 import org.xml.sax.Attributes;
@@ -35,19 +32,11 @@ public class MySAX extends DefaultHandler
 		sellerFile = new FileWriter("sellerFile.csv");
 		bidderFile = new FileWriter("bidderFile.csv");
 		buyPriceFile = new FileWriter("buyPriceFile.csv");
-		
-//		// must be remove before submit assignment
-		for (int i = 0; i < 40; i++) {
-			File xmlSource = new File("items-"+ i +".xml");
-//			File xmlSource = new File("text.xml");
-		    FileReader r = new FileReader(xmlSource);
+				
+		for (int i = 0; i < args.length; i++) {
+		    FileReader r = new FileReader(args[i]);
 		    xr.parse(new InputSource(r));
 		}
-//		
-//		for (int i = 0; i < args.length; i++) {
-//		    FileReader r = new FileReader(args[i]);
-//		    xr.parse(new InputSource(r));
-//		}
 	
 		itemFile.close();
 		itemLocationFile.close();
@@ -56,9 +45,6 @@ public class MySAX extends DefaultHandler
 		sellerFile.close();
 		bidderFile.close();
 		buyPriceFile.close();
-		
-		// must be remove before submit assignment
-//		System.out.println("Done");
     }
 
 
@@ -66,6 +52,7 @@ public class MySAX extends DefaultHandler
     	super();
     }
 
+    // get actual money 
     static String strip(String money) {
         if (money.equals(""))
             return money;
@@ -83,12 +70,38 @@ public class MySAX extends DefaultHandler
         }
     }
     
+    // check Unique value
     boolean checkExistValue(ArrayList<String> sellerArray, String targetValue) {
         for(String s: sellerArray){
             if(s.equalsIgnoreCase(targetValue))
                 return true;
         }
         return false;
+    }
+    
+ // a method for write value in file
+    public boolean writeFile(FileWriter fileName, String value) {
+    	try {
+    		fileName.append(value);
+    		fileName.append(FIELD_DELIMITER);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	return false;
+    }
+    
+    // convert ebay timestamp to mysql timestamp
+    private static String convertTimeToMySQL(String eBayTime) {
+        SimpleDateFormat ebayTimePattern = new SimpleDateFormat("MMM-dd-yy HH:mm:ss");
+        SimpleDateFormat MySQLPattern = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        String MySQLFormattedPattern = "";
+        try {
+            Date parsedEbayTime = ebayTimePattern.parse(eBayTime);
+            MySQLFormattedPattern = MySQLPattern.format(parsedEbayTime);
+        } catch (ParseException ex) {
+            System.out.println(ex.getMessage());
+        }
+        return MySQLFormattedPattern;
     }
 
     public void startDocument () {
@@ -131,9 +144,13 @@ public class MySAX extends DefaultHandler
     
     private ArrayList<String> sellerArray = new ArrayList<String>();
     private ArrayList<String> bidderArray = new ArrayList<String>();
+    private ArrayList<String> categoryArray = new ArrayList<String>();
     
     private int categoryCount = 1;
-
+    private StringBuilder chars = new StringBuilder();
+    
+    // events
+    
     public void startElement (String uri, String name, String qName, Attributes atts) {
     	if(qName.equalsIgnoreCase("Item")){
             try {
@@ -145,17 +162,8 @@ public class MySAX extends DefaultHandler
 			}
         } else if(qName.equalsIgnoreCase("Name")) {
     		bName = true;
-    	} else if(qName.equalsIgnoreCase("Category")) {
-    		try {
-    			String strI = Integer.toString(categoryCount);
-				categoryItemFile.append(strI);
-    			categoryItemFile.append(FIELD_DELIMITER);
-				categoryItemFile.append(itemID);
-				categoryItemFile.append(FIELD_DELIMITER);
-				categoryCount++;
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+    	} else if(qName.equalsIgnoreCase("Category")) {	
+   			chars.setLength(0);
     		bCategory = true;
     	} else if(qName.equalsIgnoreCase("Currently")) {
     		bCurrently = true;
@@ -254,12 +262,6 @@ public class MySAX extends DefaultHandler
     }
 
 
-    private CharSequence string(int count2) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-
 	public void endElement (String uri, String name, String qName) {
 		if(qName.equalsIgnoreCase("Item")) {
 			try {
@@ -274,11 +276,22 @@ public class MySAX extends DefaultHandler
 				e.printStackTrace();
 			}
 		} else if(qName.equalsIgnoreCase("Category")) {
-    		try {
-				categoryItemFile.append(NEW_LINE_SEPERATOR);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			String catName = chars.toString();
+		
+        	if(!checkExistValue(categoryArray, itemID + FIELD_DELIMITER + catName + FIELD_DELIMITER)) {
+        		categoryArray.add(catName);
+        		try {
+        			categoryItemFile.append(Integer.toString(categoryCount));
+        			categoryItemFile.append(FIELD_DELIMITER);
+    				categoryItemFile.append(itemID);
+    				categoryItemFile.append(FIELD_DELIMITER);
+    				bCategory = writeFile(categoryItemFile, catName);
+    				categoryItemFile.append(NEW_LINE_SEPERATOR);
+    				categoryCount++;
+    			} catch (IOException e1) {
+    				e1.printStackTrace();
+    			} 
+        	}
     	} else if(qName.equalsIgnoreCase("Buy_Price")) {
     		try {
 				buyPriceFile.append(NEW_LINE_SEPERATOR);	
@@ -303,38 +316,14 @@ public class MySAX extends DefaultHandler
     	} 
     }
     
-    public boolean writeFile(FileWriter fileName, String value) {
-    	try {
-    		fileName.append(value);
-    		fileName.append(FIELD_DELIMITER);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-    	return false;
-    }
-    
-    private static String convertTimeToMySQL(String eBayTime) {
-        SimpleDateFormat ebayTimePattern = new SimpleDateFormat("MMM-dd-yy HH:mm:ss");
-        SimpleDateFormat MySQLPattern = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String MySQLFormattedPattern = "";
-        try {
-            Date parsedEbayTime = ebayTimePattern.parse(eBayTime);
-            MySQLFormattedPattern = MySQLPattern.format(parsedEbayTime);
-        } catch (ParseException ex) {
-            System.out.println(ex.getMessage());
-        }
-        return MySQLFormattedPattern;
-    }
-    
-    
     public void characters (char ch[], int start, int length)
     {
-    	String value = new String(ch, start, length);
+
+    	String value = new String(ch, start,length);
+        chars.append(ch, start, length);
     	
     	if(bName) {
     		bName = writeFile(itemFile, value);
-    	} else if(bCategory) {
-    		bCategory = writeFile(categoryItemFile, value);
     	} else if(bCurrently) {
     		bCurrently = writeFile(itemFile, strip(value));
     	} else if(bBuyPrice) {

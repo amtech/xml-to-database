@@ -144,8 +144,7 @@ public class MySAX extends DefaultHandler
     
     private ArrayList<String> sellerArray = new ArrayList<String>();
     private ArrayList<String> bidderArray = new ArrayList<String>();
-    private ArrayList<String> categoryArray = new ArrayList<String>();
-    
+   
     private int categoryCount = 1;
     private StringBuilder chars = new StringBuilder();
     
@@ -277,21 +276,18 @@ public class MySAX extends DefaultHandler
 			}
 		} else if(qName.equalsIgnoreCase("Category")) {
 			String catName = chars.toString();
-		
-        	if(!checkExistValue(categoryArray, itemID + FIELD_DELIMITER + catName + FIELD_DELIMITER)) {
-        		categoryArray.add(catName);
-        		try {
-        			categoryItemFile.append(Integer.toString(categoryCount));
-        			categoryItemFile.append(FIELD_DELIMITER);
-    				categoryItemFile.append(itemID);
-    				categoryItemFile.append(FIELD_DELIMITER);
-    				bCategory = writeFile(categoryItemFile, catName);
-    				categoryItemFile.append(NEW_LINE_SEPERATOR);
-    				categoryCount++;
-    			} catch (IOException e1) {
-    				e1.printStackTrace();
-    			} 
-        	}
+    		try {
+    			categoryItemFile.append(Integer.toString(categoryCount));
+    			categoryItemFile.append(FIELD_DELIMITER);
+				categoryItemFile.append(itemID);
+				categoryItemFile.append(FIELD_DELIMITER);
+				bCategory = writeFile(categoryItemFile, catName);
+				categoryItemFile.append(NEW_LINE_SEPERATOR);
+				categoryCount++;
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			} 
+        	
     	} else if(qName.equalsIgnoreCase("Buy_Price")) {
     		try {
 				buyPriceFile.append(NEW_LINE_SEPERATOR);	

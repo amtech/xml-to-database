@@ -1,4 +1,4 @@
-use ad;
+USE ad;
 
 CREATE TABLE sellers (
 user_id VARCHAR(100) NOT NULL,

@@ -33,8 +33,7 @@ CREATE TABLE locations (
 item_id INT NOT NULL,
 latitude DECIMAL(10,8) NOT NULL,
 longitude DECIMAL(11,8) NOT NULL,
-PRIMARY KEY (item_id),
-FOREIGN KEY (item_id) REFERENCES items(item_id)
+PRIMARY KEY (item_id)
 );
 
 CREATE TABLE buy_prices (

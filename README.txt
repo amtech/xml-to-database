@@ -1,7 +1,8 @@
 Search Technology for Media & Web -- WiSe 2018/19
-Assignment 1
+Assignment 1 (http://user.informatik.uni-bremen.de/smaneth/STMW1/)
 G M Nazmul Hossain
 Md Shah Newaz Jubayed
+
 
 Q: List your relations. Please specify all keys that hold on each relation. You need not specify attribute types at this stage.
 

@@ -60,6 +60,6 @@ user_id VARCHAR(100) NOT NULL,
 time TIMESTAMP NOT NULL,
 amount DECIMAL(8,2) NOT NULL,
 PRIMARY KEY (item_id,user_id,amount),
-FOREIGN KEY (item_id) REFERENCES ittems(item_id),
+FOREIGN KEY (item_id) REFERENCES items(item_id),
 FOREIGN KEY (user_id) REFERENCES bidders(user_id)
 );

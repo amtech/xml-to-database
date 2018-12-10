@@ -6,18 +6,18 @@
 USE ad;
 
 -- Find the number of users in the database.
-SELECT count(*) FROM 
+SELECT count(*) AS NumberOfUsers FROM 
 	(SELECT user_id FROM sellers 
 		UNION SELECT user_id FROM bidders
 	) T;
 
 
 -- Find the number of items in "New York", i.e., itmes whose location is exactly the string "New York". Pay special attention to case sensitivity. E.g., you should not match items in "new york".
-SELECT count(item_id) FROM items WHERE Location = "New York" AND BINARY(Location) = BINARY("New York");
+SELECT count(item_id) AS Items FROM items WHERE Location = "New York" AND BINARY(Location) = BINARY("New York");
 
 
 -- Find the number of auctions belonging to exactly four categories. Be careful to remove duplicates, if you store them.
-SELECT count(*) FROM 
+SELECT count(*) AS NumberOfAuctions FROM 
 	(SELECT item_id FROM categories 
 		GROUP BY item_id 
 		HAVING count(category) = 4
@@ -34,15 +34,15 @@ SELECT item_id
 
 
 -- Find the number of sellers whose rating is higher than 1000.
-SELECT count(*) FROM sellers WHERE rating > 1000;
+SELECT count(*) AS NumberOfSellers FROM sellers WHERE rating > 1000;
 
 
 -- Find the number of users who are both sellers and bidders.
-SELECT count(*) FROM sellers INNER JOIN bidders ON sellers.user_id = bidders.user_id;
+SELECT count(*) AS NumberOfUsers FROM sellers INNER JOIN bidders ON sellers.user_id = bidders.user_id;
 
 
 -- Find the number of categories that include at least one item with a bid of more than $100.
-SELECT count(*) FROM 
+SELECT count(*) AS NumberOfCategories FROM 
 	(SELECT count(*) FROM categories INNER JOIN bids 
 		ON categories.item_id = bids.item_id 
 		WHERE bids.amount > 100 
